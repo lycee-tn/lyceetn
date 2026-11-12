@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LycéeTN — Cours, Devoirs & Séries pour les élèves tunisiens</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Fond animé -->
+  <div class="bg-orbs">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+  <div class="grid-overlay"></div>
+
+  <!-- Navbar -->
+  <nav>
+    <div class="nav-inner">
+      <div class="logo">🎓 Lycée<span>TN</span></div>
+      <div class="nav-links">
+        <a href="#ressources" class="nav-link active" data-tab="all">Tout</a>
+        <a href="#ressources" class="nav-link" data-tab="cours">Cours</a>
+        <a href="#ressources" class="nav-link" data-tab="devoirs">Devoirs</a>
+        <a href="#ressources" class="nav-link" data-tab="series">Séries</a>
+      </div>
+      <button class="btn btn-primary" id="btn-add">+ Ajouter</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <h1>La plateforme des élèves du <span class="grad">lycée tunisien</span></h1>
+    <p>Trouve et partage des cours, devoirs de synthèse et séries d'exercices — de la 2ème année à la Bac.</p>
+    <div class="hero-search">
+      <input type="text" id="search" placeholder="🔎 Rechercher un cours, un devoir, une série…">
+    </div>
+    <div class="stats">
+      <div class="stat"><span id="stat-cours">0</span> Cours</div>
+      <div class="stat"><span id="stat-devoirs">0</span> Devoirs</div>
+      <div class="stat"><span id="stat-series">0</span> Séries</div>
+    </div>
+  </header>
+
+  <!-- Filtres -->
+  <section class="filters" id="ressources">
+    <div class="filter-row">
+      <select id="f-type">
+        <option value="all">📚 Tous les types</option>
+        <option value="cours">📖 Cours</option>
+        <option value="devoir">📝 Devoirs</option>
+        <option value="serie">✏️ Séries</option>
+      </select>
+      <select id="f-niveau">
+        <option value="all">🎓 Tous les niveaux</option>
+        <option value="2ème année">2ème année</option>
+        <option value="3ème année">3ème année</option>
+        <option value="4ème année">4ème année (Bac)</option>
+      </select>
+      <select id="f-section">
+        <option value="all">🏛️ Toutes les sections</option>
+        <option value="Sciences expérimentales">Sciences expérimentales</option>
+        <option value="Mathématiques">Mathématiques</option>
+        <option value="Technique">Technique</option>
+        <option value="Informatique">Informatique</option>
+        <option value="Lettres">Lettres</option>
+        <option value="Économie & Gestion">Économie & Gestion</option>
+        <option value="Sport">Sport</option>
+      </select>
+      <select id="f-matiere">
+        <option value="all">📕 Toutes les matières</option>
+        <option value="Mathématiques">Mathématiques</option>
+        <option value="Sciences physiques">Sciences physiques</option>
+        <option value="Sciences de la vie et de la terre">Sciences de la vie et de la terre</option>
+        <option value="Arabe">Arabe</option>
+        <option value="Français">Français</option>
+        <option value="Anglais">Anglais</option>
+        <option value="Philosophie">Philosophie</option>
+        <option value="Informatique">Informatique</option>
+        <option value="Histoire-Géo">Histoire-Géo</option>
+        <option value="Éducation islamique">Éducation islamique</option>
+        <option value="Économie">Économie</option>
+        <option value="Gestion">Gestion</option>
+        <option value="Comptabilité">Comptabilité</option>
+        <option value="Technologie">Technologie</option>
+      </select>
+      <button class="btn btn-ghost" id="btn-reset">Réinitialiser</button>
+    </div>
+  </section>
+
+  <!-- Liste des ressources -->
+  <section class="list" id="list"></section>
+
+  <!-- Modal d'ajout -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Ajouter une ressource</h2>
+        <button class="close" id="btn-close">×</button>
+      </div>
+      <form id="form">
+        <div class="field">
+          <label>Type de ressource</label>
+          <div class="segmented">
+            <label><input type="radio" name="type" value="cours" checked><span>📖 Cours</span></label>
+            <label><input type="radio" name="type" value="devoir"><span>📝 Devoir</span></label>
+            <label><input type="radio" name="type" value="serie"><span>✏️ Série</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="in-title">Titre *</label>
+          <input type="text" id="in-title" placeholder="Ex : Devoir de synthèse n°1 — Sciences physiques" required maxlength="120">
+        </div>
+        <div class="row3">
+          <div class="field">
+            <label for="in-niveau">Niveau *</label>
+            <select id="in-niveau" required>
+              <option value="2ème année">2ème année</option>
+              <option value="3ème année">3ème année</option>
+              <option value="4ème année" selected>4ème année (Bac)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="in-section">Section *</label>
+            <select id="in-section" required>
+              <option value="Sciences expérimentales">Sciences expérimentales</option>
+              <option value="Mathématiques">Mathématiques</option>
+              <option value="Technique">Technique</option>
+              <option value="Informatique">Informatique</option>
+              <option value="Lettres">Lettres</option>
+              <option value="Économie & Gestion">Économie & Gestion</option>
+              <option value="Sport">Sport</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="in-matiere">Matière *</label>
+            <select id="in-matiere" required>
+              <option>Mathématiques</option>
+              <option>Sciences physiques</option>
+              <option>Sciences de la vie et de la terre</option>
+              <option>Arabe</option>
+              <option>Français</option>
+              <option>Anglais</option>
+              <option>Philosophie</option>
+              <option>Informatique</option>
+              <option>Histoire-Géo</option>
+              <option>Éducation islamique</option>
+              <option>Économie</option>
+              <option>Gestion</option>
+              <option>Comptabilité</option>
+              <option>Technologie</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="in-desc">Description / contenu</label>
+          <textarea id="in-desc" rows="4" placeholder="Détails, chapitres concernés, corrigé disponible…"></textarea>
+        </div>
+        <div class="field">
+          <label for="in-link">Lien externe (PDF, Google Drive, etc.) — optionnel</label>
+          <input type="url" id="in-link" placeholder="https://…">
+        </div>
+        <div class="field">
+          <label for="in-files">📎 Pièces jointes — photos ou PDF du devoir (jusqu'à 8 fichiers)</label>
+          <input type="file" id="in-files" accept="image/*,application/pdf" multiple>
+          <div id="files-preview" class="files-preview"></div>
+        </div>
+        <div class="field">
+          <label for="in-author">Ton nom / pseudo — optionnel</label>
+          <input type="text" id="in-author" placeholder="Anonyme" maxlength="40">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">✅ Publier</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <p>🎓 LycéeTN — fait par des élèves, pour des élèves 🇹🇳</p>
+    <p class="muted" id="mode-note">Chargement…</p>
+    <button class="btn btn-ghost small" id="btn-export">⬇️ Exporter mes données</button>
+  </footer>
+
+  <!-- Visualiseur plein écran (images / PDF) -->
+  <div class="viewer" id="viewer">
+    <div class="viewer-bar">
+      <span id="viewer-name"></span>
+      <div class="viewer-actions">
+        <a class="icon-btn" id="viewer-download" href="#" download>⬇️ Télécharger</a>
+        <button class="close" id="viewer-close">×</button>
+      </div>
+    </div>
+    <div class="viewer-body" id="viewer-body"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
