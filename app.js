@@ -146,21 +146,6 @@ async function cloudAdd(item, files, onProgress) {
   return item;
 }
 
-async function cloudDelete(item) {
-  /* suppression des fichiers du storage */
-  for (const f of item.files || []) {
-    if (f.path) {
-      await fetch(`${SB.url}/storage/v1/object/${BUCKET}/${f.path}`, {
-        method: 'DELETE', headers: { apikey: SB.key, Authorization: `Bearer ${SB.key}` }
-      });
-    }
-  }
-  const r = await fetch(`${SB.url}/rest/v1/ressources?id=eq.${item.id}`, {
-    method: 'DELETE', headers: sbHeaders
-  });
-  if (!r.ok) throw new Error('delete: ' + (await r.text()));
-}
-
 /* ============== COUCHE DE DONNÉES UNIFIÉE ============== */
 async function loadItems() {
   if (isCloud) {
@@ -374,6 +359,14 @@ $('#form').addEventListener('submit', async (e) => {
   const link = $('#in-link').value.trim();
   const btn = $('#form button[type="submit"]');
   const btnText = btn.textContent;
+  const pass = $('#in-pass').value.trim();
+
+  if (isCloud && !pass) {
+    toast('⚠️ Choisis un mot de passe de suppression', true);
+    $('#in-pass').focus();
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = '⏳ Publication…';
 
@@ -394,6 +387,12 @@ $('#form').addEventListener('submit', async (e) => {
   try {
     if (isCloud) {
       await cloudAdd(item, selectedFiles, (n, tot) => { btn.textContent = `⏳ Fichier ${n}/${tot}…`; });
+      /* enregistrer le mot de passe de suppression */
+      const rs = await fetch(`${SB.url}/rest/v1/rpc/definir_secret`, {
+        method: 'POST', headers: sbHeaders,
+        body: JSON.stringify({ p_id: item.id, p_secret: pass })
+      });
+      if (!rs.ok) throw new Error('mot de passe non enregistré — exécute supabase-security.sql');
     } else {
       for (const f of selectedFiles) {
         const fid = crypto.randomUUID();
@@ -422,7 +421,7 @@ $('#form').addEventListener('submit', async (e) => {
   }
 });
 
-/* Suppression d'une ressource (et de ses fichiers) */
+/* Suppression d'une ressource (protégée par mot de passe en mode cloud) */
 $('#list').addEventListener('click', (e) => {
   const viewBtn = e.target.closest('[data-view]');
   if (viewBtn) { openViewer(viewBtn.dataset.view); return; }
@@ -431,15 +430,39 @@ $('#list').addEventListener('click', (e) => {
   const id = btn.dataset.del;
   const item = items.find((i) => i.id === id);
   if (!item) return;
+
+  const doDelete = async (deletePass) => {
+    if (isCloud) {
+      const r = await fetch(`${SB.url}/rest/v1/rpc/supprimer_ressource`, {
+        method: 'POST', headers: sbHeaders,
+        body: JSON.stringify({ p_id: item.id, p_secret: deletePass })
+      });
+      if (!r.ok) {
+        const t = await r.text();
+        if (t.includes('MOT_DE_PASSE_INCORRECT')) toast('❌ Mot de passe incorrect', true);
+        else toast('⚠️ Échec de suppression', true);
+        return;
+      }
+      items = items.filter((i) => i.id !== id);
+      render();
+      toast('🗑️ Ressource supprimée');
+    } else {
+      await Promise.all((item.files || []).map((f) => idbDel(f.id)));
+      items = items.filter((i) => i.id !== id);
+      saveLocal();
+      render();
+      toast('🗑️ Ressource supprimée');
+    }
+  };
+
   if (confirm(`Supprimer « ${item.title} » et ses pièces jointes ?`)) {
-    (isCloud ? cloudDelete(item) : Promise.all((item.files || []).map((f) => idbDel(f.id))))
-      .then(() => {
-        items = items.filter((i) => i.id !== id);
-        if (!isCloud) saveLocal();
-        render();
-        toast('🗑️ Ressource supprimée');
-      })
-      .catch((err) => { console.error(err); toast('⚠️ Échec de suppression', true); });
+    if (isCloud) {
+      const pass = prompt('🔑 Mot de passe de suppression de cette ressource :');
+      if (pass === null) return;
+      doDelete(pass).catch((err) => { console.error(err); toast('⚠️ Échec de suppression', true); });
+    } else {
+      doDelete(null).catch((err) => { console.error(err); toast('⚠️ Échec de suppression', true); });
+    }
   }
 });
 
